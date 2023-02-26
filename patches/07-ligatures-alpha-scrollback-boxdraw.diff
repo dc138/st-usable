@@ -1,28 +1,29 @@
 diff --git a/Makefile b/Makefile
-index 470ac86..38240da 100644
+index 6dfa212..adfa07a 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -4,7 +4,7 @@
  
  include config.mk
  
--SRC = st.c x.c
-+SRC = st.c x.c hb.c
+-SRC = st.c x.c boxdraw.c
++SRC = st.c x.c boxdraw.c hb.c
  OBJ = $(SRC:.c=.o)
  
  all: options st
-@@ -22,7 +22,8 @@ config.h:
+@@ -22,8 +22,9 @@ config.h:
  	$(CC) $(STCFLAGS) -c $<
  
  st.o: config.h st.h win.h
 -x.o: arg.h config.h st.h win.h
 +x.o: arg.h config.h st.h win.h hb.h
+ boxdraw.o: config.h st.h boxdraw_data.h
 +hb.o: st.h
  
  $(OBJ): config.h config.mk
  
 diff --git a/config.mk b/config.mk
-index 47c615e..d7439a3 100644
+index 1e306f8..3e13e53 100644
 --- a/config.mk
 +++ b/config.mk
 @@ -15,10 +15,12 @@ PKG_CONFIG = pkg-config
@@ -30,10 +31,9 @@ index 47c615e..d7439a3 100644
  INCS = -I$(X11INC) \
         `$(PKG_CONFIG) --cflags fontconfig` \
 -       `$(PKG_CONFIG) --cflags freetype2`
--LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft -lXrender\
 +       `$(PKG_CONFIG) --cflags freetype2` \
 +       `$(PKG_CONFIG) --cflags harfbuzz`
-+LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft -lXrender \
+ LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft -lXrender\
         `$(PKG_CONFIG) --libs fontconfig` \
 -       `$(PKG_CONFIG) --libs freetype2`
 +       `$(PKG_CONFIG) --libs freetype2` \
@@ -192,21 +192,20 @@ index 0000000..88de9bd
 +void hbtransform(HbTransformData *, XftFont *, const Glyph *, int, int);
 +void hbcleanup(HbTransformData *);
 diff --git a/st.c b/st.c
-index 79ee9ba..454771d 100644
+index 41d5ace..1c2edd6 100644
 --- a/st.c
 +++ b/st.c
-@@ -2711,6 +2711,8 @@ draw(void)
+@@ -2643,6 +2643,7 @@ draw(void)
  	drawregion(0, 0, term.col, term.row);
  	xdrawcursor(cx, term.c.y, term.line[term.c.y][cx],
 -			term.ocx, term.ocy, term.line[term.ocy][term.ocx]);
 +			term.ocx, term.ocy, term.line[term.ocy][term.ocx],
 +			term.line[term.ocy], term.col);
-+
  	term.ocx = cx;
  	term.ocy = term.c.y;
  	xfinishdraw();
 diff --git a/st.h b/st.h
-index 78762a2..01eea49 100644
+index 808f5f7..ae41368 100644
 --- a/st.h
 +++ b/st.h
 @@ -11,7 +11,8 @@
@@ -233,7 +232,7 @@ index 6de960d..94679e4 100644
  void xfinishdraw(void);
  void xloadcols(void);
 diff --git a/x.c b/x.c
-index 27e81d1..5d19ed7 100644
+index bf6bbf9..929a59a 100644
 --- a/x.c
 +++ b/x.c
 @@ -19,6 +19,7 @@ char *argv0;
@@ -244,7 +243,7 @@ index 27e81d1..5d19ed7 100644
  
  /* types used in config.h */
  typedef struct {
-@@ -142,6 +143,7 @@ typedef struct {
+@@ -141,6 +142,7 @@ typedef struct {
  } DC;
  
  static inline ushort sixd_to_16bit(int);
@@ -252,7 +251,7 @@ index 27e81d1..5d19ed7 100644
  static int xmakeglyphfontspecs(XftGlyphFontSpec *, const Glyph *, int, int, int);
  static void xdrawglyphfontspecs(const XftGlyphFontSpec *, Glyph, int, int, int);
  static void xdrawglyph(Glyph, int, int);
-@@ -759,7 +761,7 @@ xresize(int col, int row)
+@@ -757,7 +759,7 @@ xresize(int col, int row)
  	xclear(0, 0, win.w, win.h);
  
  	/* resize to new width */
@@ -261,7 +260,7 @@ index 27e81d1..5d19ed7 100644
  }
  
  ushort
-@@ -1071,6 +1073,9 @@ xunloadfont(Font *f)
+@@ -1062,6 +1064,9 @@ xunloadfont(Font *f)
  void
  xunloadfonts(void)
  {
@@ -271,7 +270,7 @@ index 27e81d1..5d19ed7 100644
  	/* Free the loaded fonts in the font cache.  */
  	while (frclen > 0)
  		XftFontClose(xw.dpy, frc[--frclen].font);
-@@ -1202,7 +1207,7 @@ xinit(int cols, int rows)
+@@ -1185,7 +1190,7 @@ xinit(int cols, int rows)
  	XFillRectangle(xw.dpy, xw.buf, dc.gc, 0, 0, win.w, win.h);
  
  	/* font spec buffer */
@@ -280,8 +279,8 @@ index 27e81d1..5d19ed7 100644
  
  	/* Xft rendering context */
  	xw.draw = XftDrawCreate(xw.dpy, xw.buf, xw.vis, xw.cmap);
-@@ -1256,6 +1261,22 @@ xinit(int cols, int rows)
- 		xsel.xtarget = XA_STRING;
+@@ -1241,6 +1246,22 @@ xinit(int cols, int rows)
+ 	boxdraw_xinit(xw.dpy, xw.cmap, xw.draw, xw.vis);
  }
  
 +void
@@ -303,13 +302,13 @@ index 27e81d1..5d19ed7 100644
  int
  xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x, int y)
  {
-@@ -1270,119 +1291,148 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
+@@ -1255,126 +1276,158 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
  	FcPattern *fcpattern, *fontpattern;
  	FcFontSet *fcsets[] = { NULL };
  	FcCharSet *fccharset;
 -	int i, f, numspecs = 0;
 +	int i, f, length = 0, start = 0, numspecs = 0;
-+  float cluster_xp = xp, cluster_yp = yp;
++	float cluster_xp = xp, cluster_yp = yp;
 +	HbTransformData shaped = { 0 };
 +
 +	/* Initial values. */
@@ -356,9 +355,14 @@ index 27e81d1..5d19ed7 100644
  			}
 -			yp = winy + font->ascent;
 -		}
--
--		/* Lookup character index with default font. */
--		glyphidx = XftCharIndex(xw.dpy, font->match, rune);
+
+-		if (mode & ATTR_BOXDRAW) {
+-			/* minor shoehorning: boxdraw uses only this ushort */
+-			glyphidx = boxdrawindex(&glyphs[i]);
+-		} else {
+-			/* Lookup character index with default font. */
+-			glyphidx = XftCharIndex(xw.dpy, font->match, rune);
+-		}
 -		if (glyphidx) {
 -			specs[numspecs].font = font->match;
 -			specs[numspecs].glyph = glyphidx;
@@ -368,7 +372,7 @@ index 27e81d1..5d19ed7 100644
 -			numspecs++;
 -			continue;
 -		}
- 
+-
 -		/* Fallback on font cache, search the font cache for match. */
 -		for (f = 0; f < frclen; f++) {
 -			glyphidx = XftCharIndex(xw.dpy, frc[f].font, rune);
@@ -397,7 +401,14 @@ index 27e81d1..5d19ed7 100644
 +					runewidth = win.cw * ((glyphs[start + idx].mode & ATTR_WIDE) ? 2.0f : 1.0f);
 +				}
 +
-+				if (shaped.glyphs[code_idx].codepoint != 0) {
++				if (glyphs[start + code_idx].mode & ATTR_BOXDRAW) {
++					/* minor shoehorning: boxdraw uses only this ushort */
++					specs[numspecs].font = font->match;
++					specs[numspecs].glyph = boxdrawindex(&glyphs[start + code_idx]);
++					specs[numspecs].x = xp;
++					specs[numspecs].y = yp;
++					numspecs++;
++				} else if (shaped.glyphs[code_idx].codepoint != 0) {
 +					/* If symbol is found, put it into the specs. */
 +					specs[numspecs].font = font->match;
 +					specs[numspecs].glyph = shaped.glyphs[code_idx].codepoint;
@@ -481,13 +492,16 @@ index 27e81d1..5d19ed7 100644
 +				}
  			}
 -		}
--
+
 -		/* Nothing was found. Use fontconfig to find matching font. */
 -		if (f >= frclen) {
 -			if (!font->set)
 -				font->set = FcFontSort(0, font->pattern,
 -				                       1, 0, &fcres);
 -			fcsets[0] = font->set;
++			/* Cleanup and get ready for next segment. */
++			hbcleanup(&shaped);
++			start = i;
  
 -			/*
 -			 * Nothing was found in the cache. Now use
@@ -503,10 +517,7 @@ index 27e81d1..5d19ed7 100644
 -			FcPatternAddCharSet(fcpattern, FC_CHARSET,
 -					fccharset);
 -			FcPatternAddBool(fcpattern, FC_SCALABLE, 1);
-+			/* Cleanup and get ready for next segment. */
-+			hbcleanup(&shaped);
-+			start = i;
- 
+-
 -			FcConfigSubstitute(0, fcpattern,
 -					FcMatchPattern);
 -			FcDefaultSubstitute(fcpattern);
@@ -550,8 +561,11 @@ index 27e81d1..5d19ed7 100644
 -		numspecs++;
  	}
  
++	hbcleanup(&shaped);
  	return numspecs;
-@@ -1534,14 +1584,17 @@ xdrawglyph(Glyph g, int x, int y)
+ }
+ 
+@@ -1528,14 +1581,17 @@ xdrawglyph(Glyph g, int x, int y)
  }
  
  void
@@ -571,7 +585,7 @@ index 27e81d1..5d19ed7 100644
  
  	if (IS_SET(MODE_HIDE))
  		return;
-@@ -1669,18 +1722,16 @@ xdrawline(Line line, int x1, int y1, int x2)
+@@ -1663,18 +1719,16 @@ xdrawline(Line line, int x1, int y1, int x2)
  	Glyph base, new;
  	XftGlyphFontSpec *specs = xw.specbuf;
  
@@ -594,7 +608,7 @@ index 27e81d1..5d19ed7 100644
  			i = 0;
  		}
  		if (i == 0) {
-@@ -1689,8 +1740,10 @@ xdrawline(Line line, int x1, int y1, int x2)
+@@ -1683,8 +1737,10 @@ xdrawline(Line line, int x1, int y1, int x2)
  		}
  		i++;
  	}
