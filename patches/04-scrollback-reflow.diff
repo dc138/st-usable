@@ -745,7 +745,7 @@ index 91e7077..a76d983 100644
  	} else {
  		y++;
  	}
-@@ -1272,89 +1435,93 @@ tsetchar(Rune u, const Glyph *attr, int x, int y)
+@@ -1272,92 +1435,96 @@ tsetchar(Rune u, const Glyph *attr, int x, int y)
  	} else if (term.line[y][x].mode & ATTR_WDUMMY) {
  		term.line[y][x-1].u = ' ';
  		term.line[y][x-1].mode &= ~ATTR_WIDE;
@@ -756,6 +756,9 @@ index 91e7077..a76d983 100644
  	term.line[y][x] = *attr;
  	term.line[y][x].u = u;
 +	term.line[y][x].mode |= ATTR_SET;
+
+	if (isboxdraw(u))
+		term.line[y][x].mode |= ATTR_BOXDRAW;
  }
  
  void
@@ -1437,7 +1440,7 @@ diff --git a/st.h b/st.h
 index 818a6f8..514ec08 100644
 --- a/st.h
 +++ b/st.h
-@@ -22,17 +22,19 @@
+@@ -22,18 +22,20 @@
  
  enum glyph_attribute {
  	ATTR_NULL       = 0,
@@ -1452,6 +1455,7 @@ index 818a6f8..514ec08 100644
 -	ATTR_WRAP       = 1 << 8,
 -	ATTR_WIDE       = 1 << 9,
 -	ATTR_WDUMMY     = 1 << 10,
+-	ATTR_BOXDRAW    = 1 << 11,
 +	ATTR_SET        = 1 << 0,
 +	ATTR_BOLD       = 1 << 1,
 +	ATTR_FAINT      = 1 << 2,
@@ -1465,6 +1469,7 @@ index 818a6f8..514ec08 100644
 +	ATTR_WIDE       = 1 << 10,
 +	ATTR_WDUMMY     = 1 << 11,
 +	ATTR_SELECTED   = 1 << 12,
++	ATTR_BOXDRAW    = 1 << 13,
  	ATTR_BOLD_FAINT = ATTR_BOLD | ATTR_FAINT,
  };
  
