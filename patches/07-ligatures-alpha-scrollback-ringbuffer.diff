@@ -177,13 +177,12 @@ diff --git a/st.c b/st.c
 index 79ee9ba..7675db6 100644
 --- a/st.c
 +++ b/st.c
-@@ -2711,7 +2711,8 @@ draw(void)
+@@ -2711,6 +2711,7 @@ draw(void)
  	drawregion(0, 0, term.col, term.row);
- 	if (term.scr == 0)
- 		xdrawcursor(cx, term.c.y, term.line[term.c.y][cx],
--				term.ocx, term.ocy, term.line[term.ocy][term.ocx]);
-+				term.ocx, term.ocy, term.line[term.ocy][term.ocx],
-+				term.line[term.ocy], term.col);
+ 	xdrawcursor(cx, term.c.y, term.line[term.c.y][cx],
+-			term.ocx, term.ocy, term.line[term.ocy][term.ocx]);
++			term.ocx, term.ocy, term.line[term.ocy][term.ocx],
++			term.line[term.ocy], term.col);
  	term.ocx = cx;
  	term.ocy = term.c.y;
  	xfinishdraw();
