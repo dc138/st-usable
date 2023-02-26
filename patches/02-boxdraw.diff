@@ -521,9 +521,9 @@ index 519b9bd..07a7c66 100644
  extern char *utmp;
  extern char *scroll;
 @@ -126,3 +135,4 @@ extern unsigned int tabspaces;
- extern unsigned int defaultfg;
  extern unsigned int defaultbg;
  extern unsigned int defaultcs;
+ extern float alpha;
 +extern const int boxdraw, boxdraw_bold, boxdraw_braille;
 diff --git a/x.c b/x.c
 index 2a3bd38..bf6bbf9 100644
