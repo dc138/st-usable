@@ -20,6 +20,7 @@ This way, if conflicts arise with the newer code, you can simply modify the patc
 - anygeometry
 - sync
 - copyurl _(with multiline sub-patches, modified to be compatible with scrollback)_
+- undercurl
 
 ## Installation
 Simply use:
