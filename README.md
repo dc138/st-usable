@@ -21,6 +21,7 @@ This way, if conflicts arise with the newer code, you can simply modify the patc
 - sync
 - copyurl _(with multiline sub-patches, modified to be compatible with scrollback)_
 - undercurl
+- openclipboard _(modified to be compatible with scrollback)_
 
 ## Installation
 Simply use:
