@@ -43,7 +43,7 @@ new file mode 100644
 index 0000000..9a992fe
 --- /dev/null
 +++ b/README.md
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,30 @@
 +# st-usable
 +My personal build of the Simple Terminal (St) with many patches included.
 +Currently targets st version `0.9`.
@@ -60,6 +60,7 @@ index 0000000..9a992fe
 +- scrollback _(with reflow, mouse & altscreen sub-patches)_
 +- ligatures _(modified to be compatible with both alpha, scrollback & boxdraw)_
 +- xresources _(with live reload using USR1 signal)_
++- clipboard
 +
 +## Installation
 +Simply use:
