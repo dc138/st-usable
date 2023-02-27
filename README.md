@@ -13,6 +13,7 @@ This way, if conflicts arise with the newer code, you can simply modify the patc
 - boxdraw
 - scrollback _(with reflow, mouse & altscreen sub-patches)_
 - ligatures _(modified to be compatible with both alpha, scrollback & boxdraw)_
+- xresources _(with live reload using USR1 signal)_
 
 ## Installation
 Simply use:
