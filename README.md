@@ -15,6 +15,10 @@ This way, if conflicts arise with the newer code, you can simply modify the patc
 - ligatures _(modified to be compatible with both alpha, scrollback & boxdraw)_
 - xresources _(with live reload using USR1 signal)_
 - clipboard
+- font2
+- desktop entry
+- anygeometry
+- sync
 
 ## Installation
 Simply use:
