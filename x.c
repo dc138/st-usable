@@ -2860,6 +2860,9 @@ run:
 	tnew(cols, rows);
 	xsetenv();
 	selinit();
+	xloadcols();
+	xunloadfonts();
+	xloadfonts(font, 0);
 	run();
 
 	return 0;
