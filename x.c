@@ -2843,26 +2843,23 @@ run:
 
 	setlocale(LC_CTYPE, "");
 	XSetLocaleModifiers("");
-	switch (geometry) {
-	case CellGeometry:
-		xinit(cols, rows);
-		break;
-	case PixelGeometry:
-		xinit(width, height);
-		cols = (win.w - 2 * borderpx) / win.cw;
-		rows = (win.h - 2 * borderpx) / win.ch;
-		break;
-	}
 	xrdb_load();
 	signal(SIGUSR1, reload);
 	cols = MAX(cols, 1);
 	rows = MAX(rows, 1);
 	tnew(cols, rows);
+       switch (geometry) {
+       case CellGeometry:
+               xinit(cols, rows);
+               break;
+       case PixelGeometry:
+               xinit(width, height);
+               cols = (win.w - 2 * borderpx) / win.cw;
+               rows = (win.h - 2 * borderpx) / win.ch;
+               break;
+       }
 	xsetenv();
 	selinit();
-	xloadcols();
-	xunloadfonts();
-	xloadfonts(font, 0);
 	run();
 
 	return 0;

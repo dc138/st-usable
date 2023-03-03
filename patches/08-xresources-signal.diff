@@ -139,7 +139,7 @@ index 2a3bd38..e8fe7ad 100644
  void
  usage(void)
  {
-@@ -2084,12 +2197,17 @@ run:
+@@ -2084,12 +2197,14 @@ run:
 
  	setlocale(LC_CTYPE, "");
  	XSetLocaleModifiers("");
@@ -151,9 +151,6 @@ index 2a3bd38..e8fe7ad 100644
  	xinit(cols, rows);
  	xsetenv();
  	selinit();
-+	xloadcols();
-+	xunloadfonts();
-+	xloadfonts(font, 0);
  	run();
 
         return 0;
