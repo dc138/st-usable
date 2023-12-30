@@ -1,10 +1,9 @@
 # st-usable
-Using the Simple Terminal be somewhat confusing, as many of the features that you would expect from a modern terminal emulator have to be patched in through community made patches, which often leads to patch conflicts and manual modification.
-This repo contains a build of the Simple Terminal with many popular patches applied and modified to work together.
+This repo contains a build of the Simple Terminal with many popular comunity patches applied.
 Currently targets st version `0.9`.
 
 The working directory directory already includes all patches, although all individual patch files can be found in the `patches/` directory if you wish to use them separately.
-Keep in mind that patch files have been modified to work together, so removing some of them will likely mean some rewriting.
+Keep in mind that patch files have been modified to work together, so removing some of them will most likely require you to fix some conflicts.
 
 ## Included patches
 - alpha
